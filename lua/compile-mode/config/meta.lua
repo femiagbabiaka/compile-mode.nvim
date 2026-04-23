@@ -99,6 +99,10 @@
 ---Use a pseudo terminal for command execution.
 ---For more info, run `:h compile-mode.use_pseudo_terminal`
 ---@field use_pseudo_terminal?      boolean
+---
+---Use the ASKPASS mechanism to prompt for passwords via Neovim.
+---For more info, run `:h compile-mode.askpass`
+---@field askpass?                   boolean
 
 ---@type CompileModeOpts
 vim.g.compile_mode = vim.g.compile_mode

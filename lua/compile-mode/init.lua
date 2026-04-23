@@ -174,6 +174,48 @@ local runjob = a.wrap(
 			M._parse_errors(bufnr, line_count - 1, line_count - 1 + #new_lines)
 		end)
 
+		local askpass_script_path = nil
+		local job_env = config.environment
+
+		if config.askpass then
+			askpass_script_path = vim.fn.tempname()
+
+			if utils.is_windows() then
+				askpass_script_path = askpass_script_path .. ".bat"
+				vim.fn.writefile({
+					"@echo off",
+					[[nvim --server %NVIM% --remote-expr "inputsecret('%~1: ')"]],
+				}, askpass_script_path)
+			else
+				vim.fn.writefile({
+					"#!/bin/sh",
+					[[escaped=$(printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g')]],
+					[[exec nvim --server "$NVIM" --remote-expr "inputsecret(\"$escaped \")"]],
+				}, askpass_script_path)
+				vim.fn.setfperm(askpass_script_path, "rwx------")
+			end
+
+			local askpass_env = {
+				SSH_ASKPASS = askpass_script_path,
+				SUDO_ASKPASS = askpass_script_path,
+				GIT_ASKPASS = askpass_script_path,
+				SSH_ASKPASS_REQUIRE = "force",
+			}
+
+			if config.clear_environment then
+				askpass_env.NVIM = vim.v.servername
+			end
+
+			job_env = vim.tbl_extend("force", job_env or {}, askpass_env)
+		end
+
+		local function cleanup_askpass()
+			if askpass_script_path then
+				vim.fn.delete(askpass_script_path)
+				askpass_script_path = nil
+			end
+		end
+
 		log.debug("starting job...")
 		local job_id = vim.fn.jobstart(cmd, {
 			cwd = compilation_directory,
@@ -181,15 +223,17 @@ local runjob = a.wrap(
 			on_stderr = on_either,
 			on_exit = function(id, code)
 				is_exited = true
+				cleanup_askpass()
 				callback(count, code, id)
 			end,
 			pty = config.use_pseudo_terminal,
-			env = config.environment,
+			env = job_env,
 			clear_env = config.clear_environment,
 		})
 		log.fmt_debug("job_id = %d", job_id)
 
 		if job_id <= 0 then
+			cleanup_askpass()
 			vim.notify("Failed to start job with command " .. cmd, vim.log.levels.ERROR)
 			return
 		end
@@ -207,6 +251,7 @@ local runjob = a.wrap(
 			callback = function()
 				vim.g.compilation_exit_code = nil
 				vim.g.compile_job_id = nil
+				cleanup_askpass()
 				vim.fn.jobstop(job_id)
 			end,
 		})

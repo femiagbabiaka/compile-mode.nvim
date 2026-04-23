@@ -54,6 +54,8 @@ local default_config = {
 	use_circular_error_navigation = false,
 	---@type boolean
 	use_pseudo_terminal = false,
+	---@type boolean
+	askpass = false,
 }
 
 local user_config = type(vim.g.compile_mode) == "function" and vim.g.compile_mode() or vim.g.compile_mode

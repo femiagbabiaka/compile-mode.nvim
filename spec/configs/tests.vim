@@ -1,5 +1,10 @@
 set rtp+=.
 
+" nix shell
+if !empty($PLENARY_PATH)
+  exe 'set rtp+=' . $PLENARY_PATH
+endif
+
 set rtp+=../plenary.nvim
 
 " vim-plug

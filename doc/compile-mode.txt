@@ -34,6 +34,7 @@ Table of Contents                             *compile-mode-table-of-contents*
   - auto_scroll                                     |compile-mode.auto_scroll|
   - debug                                                 |compile-mode.debug|
   - use_pseudo_terminal                     |compile-mode.use_pseudo_terminal|
+  - askpass                                             |compile-mode.askpass|
 6. API                                                      |compile-mode-api|
   - compile()                                         |compile-mode.compile()|
   - recompile()                                     |compile-mode.recompile()|
@@ -379,6 +380,9 @@ Here is the full default configuration:
         -- Use a pseudo terminal for command execution.
         -- :h compile-mode.use_pseudo_terminal
         use_pseudo_terminal = false,
+        -- Use the ASKPASS mechanism to prompt for passwords via Neovim.
+        -- :h compile-mode.askpass
+        askpass = false,
     }
 <
 
@@ -562,6 +566,22 @@ use_pseudo_terminal                         *compile-mode.use_pseudo_terminal*
     Use a pseudo terminal for command execution.
     This is useful when the program doesn't automatically flush the buffer so
     that the output cannot be displayed at realtime.
+
+askpass                                                 *compile-mode.askpass*
+    When `true`, enables the ASKPASS mechanism for commands that need
+    passwords. This sets `SSH_ASKPASS`, `SUDO_ASKPASS`, `GIT_ASKPASS`, and
+    `SSH_ASKPASS_REQUIRE` environment variables, pointing them to a helper
+    script that prompts for passwords within Neovim using |inputsecret()|.
+
+    This is useful when running commands like `sudo`, `ssh`, or `git` that
+    require authentication. Instead of the command hanging or failing
+    because there is no terminal for password input, a Neovim prompt
+    appears with masked input.
+
+    Note: for `sudo`, you may need to use `sudo -A` for it to honor the
+    `SUDO_ASKPASS` environment variable.
+
+    Default: `false`
 
 ==============================================================================
 6. API                                                      *compile-mode-api*

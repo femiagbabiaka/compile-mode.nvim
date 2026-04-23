@@ -182,6 +182,7 @@ function check.validate(cfg)
 		auto_scroll = { cfg.auto_scroll, "boolean" },
 		debug = { cfg.debug, "boolean" },
 		use_pseudo_terminal = { cfg.use_pseudo_terminal, "boolean" },
+		askpass = { cfg.askpass, "boolean" },
 	})
 end
 
