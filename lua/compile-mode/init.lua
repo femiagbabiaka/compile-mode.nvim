@@ -178,6 +178,10 @@ local runjob = a.wrap(
 		local job_env = config.environment
 
 		if config.askpass then
+			if not cmd:find("sudo %-A") then
+				cmd = cmd:gsub("sudo(%s)", "sudo -A%1"):gsub("sudo$", "sudo -A")
+			end
+
 			askpass_script_path = vim.fn.tempname()
 
 			if utils.is_windows() then

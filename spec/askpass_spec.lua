@@ -93,6 +93,27 @@ describe("`askpass` option", function()
 		assert.are.same({ cmd, "hello" }, output)
 	end)
 
+	it("should inject -A flag into sudo commands", function()
+		helpers.compile({ args = "echo sudo make" })
+
+		local output = helpers.get_output()
+		assert.are.same({ "echo sudo make", "sudo -A make" }, output)
+	end)
+
+	it("should not double -A if already present", function()
+		helpers.compile({ args = "echo sudo -A make" })
+
+		local output = helpers.get_output()
+		assert.are.same({ "echo sudo -A make", "sudo -A make" }, output)
+	end)
+
+	it("should not modify words starting with sudo", function()
+		helpers.compile({ args = "echo sudoers" })
+
+		local output = helpers.get_output()
+		assert.are.same({ "echo sudoers", "sudoers" }, output)
+	end)
+
 	it("should clean up the askpass script after compilation", function()
 		local cmd = env_variable("SSH_ASKPASS")
 
